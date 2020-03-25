@@ -1,6 +1,6 @@
 /target/NectedAdmin-0.2.0.war
 /.idea/
 /target/classes/
-/target/generated-sources/
 /target/maven-archiver/
 /target/maven-status/
+/target/generated-sources/
