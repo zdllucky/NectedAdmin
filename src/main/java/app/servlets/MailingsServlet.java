@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.util.List;
@@ -50,7 +52,9 @@ public class MailingsServlet extends HttpServlet {
 
 			req.getRequestDispatcher("/views/mailings.jsp").forward(req, resp);
 		} catch (Exception e) {
-			Model.getInstance().outputMessage(session, Model.DANGER, "Error loading page: " + req.getRequestURL() + req.getQueryString() + ". Reason: " + e.toString());
+			StringWriter stringWriter = new StringWriter();
+			e.printStackTrace(new PrintWriter(stringWriter));
+			Model.getInstance().outputMessage(session, Model.DANGER, "Error loading page: " + req.getRequestURL() + (req.getQueryString() != null ? req.getQueryString() : "") + ". Reason: " + stringWriter.toString());
 			resp.sendRedirect(req.getContextPath() + "/servers");
 		}
 	}
@@ -112,7 +116,9 @@ public class MailingsServlet extends HttpServlet {
 					throw new NullPointerException("Could not identify action type");
 			}
 		} catch (Exception e) {
-			Model.getInstance().outputMessage(session, Model.DANGER, "Action \"" + action + "\" error! Reason: " + e.toString());
+			StringWriter stringWriter = new StringWriter();
+			e.printStackTrace(new PrintWriter(stringWriter));
+			Model.getInstance().outputMessage(session, Model.DANGER, "Action \"" + action + "\" error! Reason: " + stringWriter.toString());
 		}
 		resp.sendRedirect(req.getContextPath() + "/mailing");
 	}

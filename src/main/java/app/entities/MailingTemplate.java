@@ -12,13 +12,15 @@ public class MailingTemplate {
 	private String subjectEn;
 	private String bodyRu;
 	private String bodyEn;
+	private String credentials;
 
 	public MailingTemplate(int id,
 	                       String label,
 	                       String subjectRu,
 	                       String subjectEn,
 	                       String bodyRu,
-	                       String bodyEn) {
+	                       String bodyEn,
+	                       String credentials) {
 		this.id = id;
 		this.label = label;
 		this.type = false;
@@ -26,6 +28,7 @@ public class MailingTemplate {
 		this.subjectEn = subjectEn;
 		this.bodyRu = bodyRu;
 		this.bodyEn = bodyEn;
+		this.credentials = credentials;
 	}
 
 	public MailingTemplate(int id,
@@ -37,7 +40,8 @@ public class MailingTemplate {
 	                       String subjectRu,
 	                       String subjectEn,
 	                       String bodyRu,
-	                       String bodyEn) {
+	                       String bodyEn,
+	                       String credentials) {
 		this.id = id;
 		this.type = true;
 		this.label = label;
@@ -49,6 +53,7 @@ public class MailingTemplate {
 		this.subjectEn = subjectEn;
 		this.bodyRu = bodyRu;
 		this.bodyEn = bodyEn;
+		this.credentials = credentials;
 	}
 
 	public int getId() {
@@ -89,5 +94,9 @@ public class MailingTemplate {
 
 	public boolean isInstant() {
 		return SQLApproval == null || SQLApproval.isBlank();
+	}
+
+	public String getCredentials() {
+		return credentials;
 	}
 }

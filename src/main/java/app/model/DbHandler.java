@@ -1291,15 +1291,17 @@ public class DbHandler {
 	                                  String subjectEn,
 	                                  String bodyRu,
 	                                  String bodyEn,
-	                                  String label) throws SQLException {
+	                                  String label,
+	                                  String credentials) throws SQLException {
 		PreparedStatement statement = this.connection.prepareStatement("INSERT " +
-				"INTO adv_email_templates(type, subject_ru, subject_en, body_ru, body_en, label) " +
-				"VALUES(-1, ?, ?, ?, ?, ?)");
+				"INTO email_templates(type, subject_ru, subject_en, body_ru, body_en, label, credentials) " +
+				"VALUES(-1, ?, ?, ?, ?, ?, ?)");
 		statement.setString(1, subjectRu);
 		statement.setString(2, subjectEn);
 		statement.setString(3, bodyRu);
 		statement.setString(4, bodyEn);
 		statement.setString(5, label);
+		statement.setString(6, credentials);
 		statement.executeUpdate();
 		return statement.getGeneratedKeys().getInt(1);
 	}
@@ -1312,10 +1314,11 @@ public class DbHandler {
 	                                      String subjectEn,
 	                                      String bodyRu,
 	                                      String bodyEn,
-	                                      String label) throws SQLException {
+	                                      String label,
+	                                      String credentials) throws SQLException {
 		PreparedStatement statement = this.connection.prepareStatement("INSERT " +
-				"INTO adv_email_templates(type, state, time_to_trig, sql_approval, subject_ru, subject_en, body_ru, body_en, label) " +
-				"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				"INTO email_templates(type, state, time_to_trig, sql_approval, subject_ru, subject_en, body_ru, body_en, label, credentials) " +
+				"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		statement.setString(1, type);
 		statement.setInt(2, state ? 1 : 0);
 		statement.setLong(3, timeToTrig);
@@ -1325,13 +1328,14 @@ public class DbHandler {
 		statement.setString(7, bodyRu);
 		statement.setString(8, bodyEn);
 		statement.setString(9, label);
+		statement.setString(10, credentials);
 		statement.executeUpdate();
 		return statement.getGeneratedKeys().getInt(1);
 	}
 
 	public MailingTemplate getMailingTemplate(int id) throws SQLException {
 		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT * " +
-				"FROM adv_email_templates " +
+				"FROM email_templates " +
 				"WHERE id=" + id);
 
 		if (resultSet.next()) {
@@ -1342,7 +1346,8 @@ public class DbHandler {
 						resultSet.getString("subject_ru"),
 						resultSet.getString("subject_en"),
 						resultSet.getString("body_ru"),
-						resultSet.getString("body_en"));
+						resultSet.getString("body_en"),
+						resultSet.getString("credentials"));
 			} else {
 				return new MailingTemplate(
 						resultSet.getInt("id"),
@@ -1354,7 +1359,8 @@ public class DbHandler {
 						resultSet.getString("subject_ru"),
 						resultSet.getString("subject_en"),
 						resultSet.getString("body_ru"),
-						resultSet.getString("body_en"));
+						resultSet.getString("body_en"),
+						resultSet.getString("credentials"));
 			}
 		} else return null;
 	}
@@ -1364,7 +1370,7 @@ public class DbHandler {
 				"FROM mailing_schedule " +
 				"WHERE template_id = " + id).execute();
 		return this.connection.prepareStatement("DELETE " +
-				"FROM adv_email_templates " +
+				"FROM email_templates " +
 				"WHERE id = " + id)
 				.executeUpdate() == 1 ? id : -1;
 	}
@@ -1377,9 +1383,10 @@ public class DbHandler {
 	                                        String subjectEn,
 	                                        String bodyRu,
 	                                        String bodyEn,
-	                                        String label) throws SQLException {
-		PreparedStatement statement = this.connection.prepareStatement("UPDATE adv_email_templates " +
-				"SET state = (?), time_to_trig = (?), sql_approval = (?), subject_ru = (?), subject_en = (?), body_ru = (?), body_en = (?), label= (?) " +
+	                                        String label,
+	                                        String credentials) throws SQLException {
+		PreparedStatement statement = this.connection.prepareStatement("UPDATE email_templates " +
+				"SET state = (?), time_to_trig = (?), sql_approval = (?), subject_ru = (?), subject_en = (?), body_ru = (?), body_en = (?), label= (?), credentials= (?) " +
 				"WHERE id =" + id);
 		statement.setInt(1, state ? 1 : 0);
 		statement.setLong(2, timeToTrig);
@@ -1389,6 +1396,7 @@ public class DbHandler {
 		statement.setString(6, bodyRu);
 		statement.setString(7, bodyEn);
 		statement.setString(8, label);
+		statement.setString(9, credentials);
 		statement.execute();
 	}
 
@@ -1397,21 +1405,23 @@ public class DbHandler {
 	                                    String subjectEn,
 	                                    String bodyRu,
 	                                    String bodyEn,
-	                                    String label) throws SQLException {
-		PreparedStatement statement = this.connection.prepareStatement("UPDATE adv_email_templates " +
-				"SET subject_ru = (?), subject_en = (?), body_ru = (?), body_en = (?), label = (?) " +
+	                                    String label,
+	                                    String credentials) throws SQLException {
+		PreparedStatement statement = this.connection.prepareStatement("UPDATE email_templates " +
+				"SET subject_ru = (?), subject_en = (?), body_ru = (?), body_en = (?), label = (?), credentials = (?) " +
 				"WHERE id = " + id);
 		statement.setString(1, subjectRu);
 		statement.setString(2, subjectEn);
 		statement.setString(3, bodyRu);
 		statement.setString(4, bodyEn);
 		statement.setString(5, label);
+		statement.setString(6, credentials);
 		statement.execute();
 	}
 
 	public List<MailingTemplate> getMailingTemplateList(int page, int by) throws SQLException {
-		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT id, type, label, time_to_trig, state, sql_approval " +
-				"FROM adv_email_templates " + " " +
+		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT id, type, label, time_to_trig, state, sql_approval, credentials " +
+				"FROM email_templates " + " " +
 				"ORDER BY (CASE WHEN type = -1 THEN 0 ELSE state END) DESC, id DESC " +
 				"LIMIT " + (page - 1) * by + ", " + by);
 
@@ -1424,7 +1434,8 @@ public class DbHandler {
 						null,
 						null,
 						null,
-						null));
+						null,
+						resultSet.getString("credentials")));
 			else
 				templates.add(new MailingTemplate(
 						resultSet.getInt("id"),
@@ -1436,14 +1447,15 @@ public class DbHandler {
 						null,
 						null,
 						null,
-						null));
+						null,
+						resultSet.getString("credentials")));
 		}
 		return templates;
 	}
 
 	public List<MailingTemplate> getMailingTemplateList(String procedureName) throws SQLException {
-		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT id, type, sql_approval, time_to_trig, subject_ru, subject_en, body_ru, body_en, state, label " +
-				"FROM adv_email_templates " +
+		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT id, type, sql_approval, time_to_trig, subject_ru, subject_en, body_ru, body_en, state, label, credentials " +
+				"FROM email_templates " +
 				"WHERE type LIKE '" + procedureName + "' AND state = 1");
 
 		List<MailingTemplate> templates = new ArrayList<>();
@@ -1459,7 +1471,8 @@ public class DbHandler {
 						resultSet.getString("subject_ru"),
 						resultSet.getString("subject_en"),
 						resultSet.getString("body_ru"),
-						resultSet.getString("body_en")));
+						resultSet.getString("body_en"),
+						resultSet.getString("credentials")));
 			else
 				templates.add(new MailingTemplate(
 						resultSet.getInt("id"),
@@ -1471,19 +1484,14 @@ public class DbHandler {
 						null,
 						null,
 						null,
+						null,
 						null));
 		}
 		return templates;
 	}
 
-	public int getTotalMailingTemplatesAmount() throws SQLException {
-		return this.connection.createStatement().executeQuery("SELECT COUNT(*) " +
-				"AS amount " +
-				"FROM adv_email_templates").getInt("amount");
-	}
-
 	public int toggleMailingServlet(int id, boolean toState) throws SQLException {
-		PreparedStatement statement = this.connection.prepareStatement("UPDATE adv_email_templates " +
+		PreparedStatement statement = this.connection.prepareStatement("UPDATE email_templates " +
 				"SET state = " + (toState ? 1 : 0) + " " +
 				"WHERE id = " + id);
 		return statement.executeUpdate() == 1 ? id : -1;
@@ -1517,13 +1525,13 @@ public class DbHandler {
 		return this.connection.createStatement().executeQuery("SELECT COUNT(*) " +
 				"AS amount " +
 				"FROM mailing_schedule " +
-				"WHERE activation_time > " + System.currentTimeMillis() / 1000L).getInt("amount");
+				"WHERE activation_time > " + System.currentTimeMillis()).getInt("amount");
 	}
 
 	public List<MailingTask> getMailingTasksList(int page, int by, List<MailingTemplate> templates) throws SQLException {
 		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT id, selection, activation_time, template_id " +
 				"FROM mailing_schedule " +
-				"WHERE activation_time > " + System.currentTimeMillis() / 1000L + " " +
+				"WHERE activation_time > " + System.currentTimeMillis() + " " +
 				"ORDER BY activation_time " +
 				"LIMIT " + (page - 1) * by + ", " + by);
 
@@ -1570,7 +1578,7 @@ public class DbHandler {
 
 	public List<MailingTemplate> getMailingTemplateList(boolean isWholeDataRequired) throws SQLException {
 		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT" + (isWholeDataRequired ? " * " : " id, type, label ") +
-				"FROM adv_email_templates");
+				"FROM email_templates");
 
 		List<MailingTemplate> templates = new ArrayList<>();
 		while (resultSet.next()) {
@@ -1581,7 +1589,8 @@ public class DbHandler {
 						isWholeDataRequired ? resultSet.getString("subject_ru") : null,
 						isWholeDataRequired ? resultSet.getString("subject_en") : null,
 						isWholeDataRequired ? resultSet.getString("body_ru") : null,
-						isWholeDataRequired ? resultSet.getString("body_en") : null));
+						isWholeDataRequired ? resultSet.getString("body_en") : null,
+						isWholeDataRequired ? resultSet.getString("credentials") : null));
 			else
 				templates.add(new MailingTemplate(
 						resultSet.getInt("id"),
@@ -1593,7 +1602,8 @@ public class DbHandler {
 						isWholeDataRequired ? resultSet.getString("subject_ru") : null,
 						isWholeDataRequired ? resultSet.getString("subject_en") : null,
 						isWholeDataRequired ? resultSet.getString("body_ru") : null,
-						isWholeDataRequired ? resultSet.getString("body_en") : null));
+						isWholeDataRequired ? resultSet.getString("body_en") : null,
+						isWholeDataRequired ? resultSet.getString("credentials") : null));
 		}
 		return templates;
 	}
@@ -1609,5 +1619,9 @@ public class DbHandler {
 					resultSet.getString(3));
 
 		return credentials;
+	}
+
+	public void clearMailingTaskList(long millisTime) throws SQLException {
+		this.connection.prepareStatement("DELETE FROM mailing_schedule WHERE activation_time < " + millisTime).execute();
 	}
 }

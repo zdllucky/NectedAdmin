@@ -27,9 +27,7 @@ public class SSHConnector {
 		session = jsch.getSession(user, host, port);
 		session.setPassword(password);
 		session.setConfig("StrictHostKeyChecking", "no");
-		System.out.println("Est. connection...");
 		session.connect(5000);
-		System.out.println("Connected");
 		if (session.isConnected())
 			session.disconnect();
 	}
@@ -42,7 +40,6 @@ public class SSHConnector {
 		session.setPassword(password);
 		session.setConfig("StrictHostKeyChecking", "no");
 		session.connect(10000);
-		System.out.println("Connected to vps!");
 		session.isConnected();
 	}
 

@@ -80,7 +80,8 @@ public class ManageMailingServlet extends HttpServlet {
 								req.getParameter("subject_en"),
 								req.getParameter("body_ru"),
 								req.getParameter("body_en"),
-								req.getParameter("label"));
+								req.getParameter("label"),
+								req.getParameter("credentials"));
 					}
 					//If adding mass mail template
 					else {
@@ -89,7 +90,8 @@ public class ManageMailingServlet extends HttpServlet {
 								req.getParameter("subject_en"),
 								req.getParameter("body_ru"),
 								req.getParameter("body_en"),
-								req.getParameter("label"));
+								req.getParameter("label"),
+								req.getParameter("credentials"));
 					}
 					Logger.getInstance().add("Mailing template creation", Logger.INFO, "ID#" + newTemplateId);
 					Model.getInstance().outputMessage(session, Model.SUCCESS, "Mailing template #" + newTemplateId + " was created successfully!");
@@ -118,7 +120,8 @@ public class ManageMailingServlet extends HttpServlet {
 								req.getParameter("subject_en"),
 								req.getParameter("body_ru"),
 								req.getParameter("body_en"),
-								req.getParameter("label"));
+								req.getParameter("label"),
+								req.getParameter("credentials"));
 					} else {
 						DbHandler.getInstance().editMassMailingTemplate(
 								id,
@@ -126,7 +129,8 @@ public class ManageMailingServlet extends HttpServlet {
 								req.getParameter("subject_en"),
 								req.getParameter("body_ru"),
 								req.getParameter("body_en"),
-								req.getParameter("label"));
+								req.getParameter("label"),
+								req.getParameter("credentials"));
 					}
 					Logger.getInstance().add("Mailing template editing", Logger.WARNING, "ID#" + template.getId());
 					Model.getInstance().outputMessage(session, Model.SUCCESS, "Mailing template #" + template.getId() + " was updated!");

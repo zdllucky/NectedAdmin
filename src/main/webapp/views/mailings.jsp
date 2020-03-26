@@ -159,6 +159,7 @@
                                 <th scope="col">Label</th>
                                 <th scope="col">Type</th>
                                 <th scope="col">Trigger log name</th>
+                                <th scope="col">Credentials</th>
                                 <th scope="col">Time to trig</th>
                                 <th scope="col" class="text-right pr-md-5">Actions</th>
                             </tr>
@@ -173,6 +174,8 @@
                                 <td><%=t.isPersonal() ? (t.isInstant() ? "Instant" : "Personal") : "Mass"%>
                                 </td>
                                 <td><%=t.isPersonal() ? t.getTriggerLogName() : ""%>
+                                </td>
+                                <td><%=t.getCredentials()%>
                                 </td>
                                 <td><%=t.isPersonal() ? t.getTimeToTrig() : ""%>
                                 </td>

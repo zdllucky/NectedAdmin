@@ -84,31 +84,34 @@ public class Logger {
 				statement.setInt(4, result);
 				statement.setString(5, reference);
 				statement.execute();
-
 				//Checking mailing requirements for the action performed
-				if (associatedUser != -1 && result == Logger.INFO) {
+				if (associatedUser != -1) {
 					List<MailingTemplate> templates = DbHandler.getInstance().getMailingTemplateList(procedureName);
+					final String templateReference = (reference != null && !reference.isBlank() ? reference + ", " : "") + "result: \"" + result + "\", procedure_name: \"" + procedureName + "\", timestamp: \"" + timestamp + "\"";
 					for (MailingTemplate t : templates) {
 						if (t.isInstant() && Model.getInstance().getSystemConfigValue("auto_mailing").equals("ON")) {
 							Client client = DbHandler.getInstance().getClient(associatedUser);
 							String pattern = "EEE, dd MMM yyyy HH:mm:ss Z";
 							SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
 							dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
 							List<Pair<String, String>> params = new ArrayList<>();
-							params.add(new Pair<>("o:deliverytime", dateFormat.format(System.currentTimeMillis() + t.getTimeToTrig() * 1000L)));
+							if (t.getTimeToTrig() > 10)
+								params.add(new Pair<>("o:deliverytime", dateFormat.format(System.currentTimeMillis() + t.getTimeToTrig() * 1000L)));
 
-							String subject = EmailSender.getInstance().parseMessage(t.getSubject(client.getLang()), client, MailingTask.parseLogReference(reference));
-							String body = EmailSender.getInstance().parseMessage(t.getBody(client.getLang()), client, MailingTask.parseLogReference(reference));
+							String subject = EmailSender.getInstance().parseMessage(t.getSubject(client.getLang()), client, MailingTask.parseLogReference(templateReference));
+							String body = EmailSender.getInstance().parseMessage(t.getBody(client.getLang()), client, MailingTask.parseLogReference(templateReference));
+
+							if (t.getCredentials().equals("ads_box"))
+								params.add(new Pair<>("o:tag", "offer"));
 
 							EmailSender.getInstance().sendEmail(
-									EmailSender.CREDENTIALS.get("informer_box_" + client.getLang()),
+									EmailSender.CREDENTIALS.get(t.getCredentials() + "_" + client.getLang()),
 									EmailSender.getInstance().parseContact(client),
 									subject,
 									body,
 									params);
 						} else {
-							DbHandler.getInstance().schedulePersonalMailing(associatedUser, t, reference);
+							DbHandler.getInstance().schedulePersonalMailing(associatedUser, t, templateReference);
 						}
 					}
 				}

@@ -3,7 +3,9 @@ package app.model;
 import app.entities.Client;
 import app.entities.EmailConfig;
 import app.entities.Pair;
-import kong.unirest.*;
+import kong.unirest.MultipartBody;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -47,6 +49,7 @@ public class EmailSender {
 	}
 
 	//Basic email sender API handler
+	@Deprecated
 	public Boolean sendEmail(String language,
 	                         String from,
 	                         String to,
@@ -104,8 +107,7 @@ public class EmailSender {
 			for (Pair<String, String> tParam : params)
 				multipartBody.field(tParam.getKey(), tParam.getValue());
 
-		HttpResponse<JsonNode> s = multipartBody.asJson();
-		return s.isSuccess();
+		return multipartBody.asEmpty().isSuccess();
 	}
 
 	public String parseMessage(String message, Client client, Map<String, String> logReferenceMap) {

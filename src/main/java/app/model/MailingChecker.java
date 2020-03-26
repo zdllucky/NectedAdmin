@@ -1,9 +1,14 @@
 package app.model;
 
 public class MailingChecker implements Runnable {
+	private long creationTime;
+
+	public MailingChecker() {
+		creationTime = System.currentTimeMillis();
+	}
+
 	@Override
 	public void run() {
-		long creationTime = System.currentTimeMillis();
 		try {
 			Model.getInstance().checkMailingTasks();
 		} catch (Exception ignored) {

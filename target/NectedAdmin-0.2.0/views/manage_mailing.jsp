@@ -1,4 +1,7 @@
 <%@ page import="app.entities.MailingTemplate" %>
+<%@ page import="app.model.EmailSender" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.stream.Collectors" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%
     MailingTemplate template = (MailingTemplate) request.getAttribute("mailing_template");
@@ -118,6 +121,7 @@
             session.removeAttribute("shout");
             session.removeAttribute("result");
         }
+        Set<String> credentials = EmailSender.CREDENTIALS.keySet().stream().map(s -> s.substring(0, s.length() - 3)).collect(Collectors.toSet());
     %>
     <div class="row mt-4 justify-content-center">
         <div class="col-12">
@@ -127,42 +131,53 @@
     </div>
     <form method="post" class="row my-4">
         <%=isEditing ? "<input name=\"id\" value=\"" + template.getId() + "\" hidden>" : ""%>
-        <div class="input-group input-group-sm mb-4 col-12 col-lg-2 pr-0">
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4 pr-lg-1">
             <div class="input-group-prepend">
-                <label for="mailingType" class="input-group-text">Type</label>
+                <label for="mailingType" class="input-group-text">Mailing type</label>
             </div>
             <select id="mailingType" name="type" class="custom-select" required>
                 <option selected value="-1">Mass</option>
                 <option value="0">Personal</option>
+                <option value="-2">Instant</option>
             </select>
         </div>
-        <div class="input-group input-group-sm mb-4 col-12 col-lg-3 pr-0">
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4 pr-lg-1">
             <div class="input-group-prepend">
-                <label class="input-group-text" for="label">Label</label>
+                <label class="input-group-text" for="label">Template label</label>
             </div>
             <input id="label" name="label" type="text" class="form-control" required="required"
                    value="<%=isEditing ? template.getLabel() : ""%>">
         </div>
-        <div class="input-group input-group-sm mb-4 col-12 col-lg-3">
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4">
             <div class="input-group-prepend">
                 <label class="input-group-text" for="triggerLogName">Log name</label>
             </div>
             <input id="triggerLogName" name="type" type="text" class="form-control" disabled>
         </div>
-        <div class="input-group input-group-sm mb-4 col-12 col-lg-2">
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4 pr-lg-1">
             <div class="input-group-prepend">
-                <label class="input-group-text" for="timeToTrig">Delay (s)</label>
+                <label class="input-group-text" for="timeToTrig">Mailing delay (sec.)</label>
             </div>
             <input id="timeToTrig" name="time_to_trig" type="number" class="form-control" disabled>
         </div>
-        <div class="input-group input-group-sm mb-4 col-12 col-lg-2 pt-1">
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4 pr-lg-1">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="credentials">Credentials</label>
+            </div>
+            <select id="credentials" name="credentials" type="text" class="form-control">
+                <%for (String tCred : credentials) {%>
+                <option value="<%=tCred%>" <%=isEditing && tCred.equals(template.getCredentials()) ? "selected" : ""%>><%=tCred%></option>
+                <%}%>
+            </select>
+        </div>
+        <div class="input-group input-group-sm mb-3 col-12 col-lg-4 pt-1">
             <div class="custom-control custom-switch">
                 <input type="checkbox" class="custom-control-input" id="state" name="state"
                        disabled <%=isEditing && template.isEnabled() ? "checked" : ""%>>
                 <label class="custom-control-label" for="state">Enable</label>
             </div>
         </div>
-        <div class="input-group mb-3 col-12" style="margin-top:-.5rem" id="approvalContainer">
+        <div class="input-group mb-3 mt-0 col-12" style="margin-top:-.5rem" id="approvalContainer">
             <div class="input-group-prepend">
                 <label for="SQLCode" class="input-group-text">SQL approval<br>query</label>
             </div>
@@ -319,12 +334,22 @@
                 editor.setOption("readOnly", false);
                 editor.refresh();
                 codeMirror.css("background", "#ffffff");
-            } else {
+            } else if ($("option:selected").val() === "-1") {
                 mailingType.attr("name", "type");
                 triggerLogName.removeAttr("required").attr("disabled", true).removeAttr("name");
                 timeToTrig.removeAttr("required").attr("disabled", true);
                 state.attr("disabled", true).prop("checked", false);
                 //addCoupon.attr("disabled", true).prop("checked", false);
+                //coupon(false);
+                editor.setOption("readOnly", true);
+                editor.refresh();
+                codeMirror.css("background", "#e9ecef");
+            } else if ($("option:selected").val() === "-2") {
+                mailingType.removeAttr("name");
+                triggerLogName.attr("required", true).removeAttr("disabled").attr("name", "type");
+                timeToTrig.attr("required", true).removeAttr("disabled");
+                state.removeAttr("disabled").prop("checked", false);
+                //addCoupon.removeAttr("disabled").prop("checked", false);
                 //coupon(false);
                 editor.setOption("readOnly", true);
                 editor.refresh();

@@ -139,14 +139,17 @@ public class Model {
 	}
 
 	public void checkMailingTasks() throws SQLException {
-		List<MailingTask> pendingTasks = DbHandler.getInstance().getMailingTasksList(
+		List<MailingTask> pendingTasks = DbHandler.getInstance().getTotalMailingTasksAmount() > 0
+				? DbHandler.getInstance().getMailingTasksList(
 				System.currentTimeMillis(),
-				DbHandler.getInstance().getMailingTemplateList(true));
+				DbHandler.getInstance().getMailingTemplateList(true))
+				: new ArrayList<>();
 
 		for (MailingTask task : pendingTasks) {
 			try {
 				List<Pair<String, String>> params = new ArrayList<>();
-				params.add(new Pair<>("o:tag", "offer"));
+				if (task.getTemplate().getCredentials().equals("ads_box"))
+					params.add(new Pair<>("o:tag", "offer"));
 
 				if (task.isPersonal()
 						&& DbHandler.getInstance().executeRawQuery(task.getTemplate().getSQLApproval()).get(1).get(0).equals("true")) {
@@ -155,7 +158,7 @@ public class Model {
 					String body = EmailSender.getInstance().parseMessage(task.getTemplate().getBody(client.getLang()), client, task.getLogReferenceMap());
 
 					EmailSender.getInstance().sendEmail(
-							EmailSender.CREDENTIALS.get("ads_box_" + client.getLang()),
+							EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_" + client.getLang()),
 							EmailSender.getInstance().parseContact(client),
 							subject,
 							body,
@@ -164,7 +167,7 @@ public class Model {
 					HashMap<String, String> mailingClientCredentials = DbHandler.getInstance().getClientCredentials(task.getSelection());
 
 					EmailSender.getInstance().sendEmail(
-							EmailSender.CREDENTIALS.get("ads_box_en"),
+							EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_en"),
 							mailingClientCredentials.entrySet()
 									.stream()
 									.filter(c -> c.getValue().equals("en"))
@@ -175,7 +178,7 @@ public class Model {
 							params);
 
 					EmailSender.getInstance().sendEmail(
-							EmailSender.CREDENTIALS.get("ads_box_ru"),
+							EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_ru"),
 							mailingClientCredentials.entrySet()
 									.stream()
 									.filter(c -> c.getValue().equals("ru"))
@@ -192,7 +195,7 @@ public class Model {
 		}
 		Logger.getInstance().add("Automailing",
 				Logger.INFO,
-				"Totally " + pendingTasks.size() + " tasks, " + pendingTasks.stream().filter(MailingTask::isPersonal).count() + " personal and " + pendingTasks.stream().filter(t -> !t.isPersonal()).count() + " mass emails have been planned.");
+				"total_amount: \"" + pendingTasks.size() + "\", personal_and_instant_amount: \"" + pendingTasks.stream().filter(MailingTask::isPersonal).count() + "\", mass_amount: \"" + pendingTasks.stream().filter(t -> !t.isPersonal()).count() + "\"");
 	}
 
 	public void deleteRemoteSubscription(Client client) {
@@ -241,6 +244,9 @@ public class Model {
 		if ((option.equals("autoremoval_timer") && systemConfigs.get("subscriptions_autoremoval").equals("ON"))
 				|| option.equals("subscriptions_autoremoval") && value.equals("ON"))
 			(clientCheckerThread = new Thread(new ClientChecker())).start();
+
+		if (option.equals("auto_mailing") && value.equals("ON"))
+			DbHandler.getInstance().clearMailingTaskList(System.currentTimeMillis());
 
 		if ((option.equals("mailing_timer") && systemConfigs.get("auto_mailing").equals("ON"))
 				|| option.equals("auto_mailing") && value.equals("ON"))
