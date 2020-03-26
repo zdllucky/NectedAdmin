@@ -166,7 +166,8 @@
             </div>
             <select id="credentials" name="credentials" type="text" class="form-control">
                 <%for (String tCred : credentials) {%>
-                <option value="<%=tCred%>" <%=isEditing && tCred.equals(template.getCredentials()) ? "selected" : ""%>><%=tCred%></option>
+                <option value="<%=tCred%>" <%=isEditing && tCred.equals(template.getCredentials()) ? "selected" : ""%>><%=tCred%>
+                </option>
                 <%}%>
             </select>
         </div>
@@ -371,15 +372,15 @@
         }*/
         <%} else {
             if (template.isPersonal()) {%>
-        mailingType.attr("disabled", true).val('0');
+        mailingType.attr("disabled", true).val(<%=template.isInstant() ? "-2" : "0"%>);
         triggerLogName.val("<%=template.getTriggerLogName()%>");
         timeToTrig.removeAttr("disabled").val(<%=template.getTimeToTrig()%>);
         state.removeAttr("disabled");
-        editor.setOption("readOnly", false);
+        editor.setOption("readOnly", <%=template.isInstant() ? "true" : "false"%>);
         editor.refresh();
-        codeMirror.css("background", "#ffffff");
+        codeMirror.css("background", "<%=template.isInstant() ? "#e9ecef" : "#ffffff"%>");
         <%} else {%>
-        mailingType.attr("disabled", true).val(<%= template.isPersonal() ? "0" : "-1"%>);
+        mailingType.attr("disabled", true).val("-1");
         <%}
     }%>
     });
