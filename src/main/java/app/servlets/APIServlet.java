@@ -243,7 +243,7 @@ public class APIServlet extends HttpServlet {
 						throw new SQLException();
 					break;
 
-				case "proceedPayment":
+				case "proceedPayment": {
 					//Gathering client data
 					client = DbHandler.getInstance().getClient(Integer.parseInt(req.getParameter("id")));
 
@@ -352,11 +352,12 @@ public class APIServlet extends HttpServlet {
 									"bonus_days_amount: \"" + bonusDaysAmount + "\", " +
 									"total_days_amount: \"" + totalDaysAmount + "\"");
 					break;
-
+				}
 				case "activateReferralBonus":
 					//Gathering client data
 					client = DbHandler.getInstance().getClient(Integer.parseInt(req.getParameter("id")));
 					resp.setStatus(400);
+					int paymentRecordId;
 
 					if (client.getRefDays() > 0) {
 						int refDaysAmount = client.getRefDays();
@@ -381,7 +382,10 @@ public class APIServlet extends HttpServlet {
 						);
 						resp.setStatus(200);
 
-						Logger.getInstance().add("Referral bonus activation", client.getId(), Logger.INFO, "Associated payment id: #" + paymentRecordId);
+						Logger.getInstance().add("Referral bonus activation", client.getId(), Logger.INFO,
+								"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
+										"payment_id: \"" + paymentRecordId + "\", " +
+										"days_amount: \"" + refDaysAmount + "\"");
 					} else {
 						throw new NullPointerException("ref_days amount is 0");
 					}

@@ -431,7 +431,7 @@
                     </td>
                     <td><%=tPayment.getDaysAmount()%>
                     </td>
-                    <td>$<%=tPayment.getFee()%>
+                    <td><%=tPayment.getFee()%>
                     </td>
                     <td><%=tPayment.getPaymentMethod()%>
                     </td>
