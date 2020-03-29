@@ -46,4 +46,15 @@ public class Payment {
 	public String getPaymentMethod() {
 		return paymentMethod;
 	}
+
+	@Override
+	public String toString() {
+		return "id: \"" + id + '\"' +
+				", fee: \"" + fee + '\"' +
+				", daysAmount: \"" + daysAmount + '\"' +
+				", couponInfo: \"" + couponInfo + '\"' +
+				", clientId: \"" + clientId + '\"' +
+				", timeStamp: \"" + timeStamp + '\"' +
+				", paymentMethod: \"" + paymentMethod + '\"';
+	}
 }

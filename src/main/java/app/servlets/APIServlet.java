@@ -250,50 +250,24 @@ public class APIServlet extends HttpServlet {
 					//Payment record id
 					int paymentRecordId;
 
+					long daysAmount;
+					long totalDaysAmount;
+					long bonusDaysAmount;
+					String fee = "0.00";
+					String currLabel = "RUB";
+					String paymentType = req.getParameter("payment_type");
+
 					//Checking payment type
 					//If payment type is by static day coupon
-					if (req.getParameter("payment_type").equals("coupon_type_2")) {
+					if (paymentType.equals("coupon_type_2")) {
+						paymentType = "Coupon";
+						daysAmount = Integer.parseInt(req.getParameter("days_amount"));
+						totalDaysAmount = client.getReferredFrom() != -1 && client.getSubscrTo() - client.getRegTime() < 5 * 86400
+								? (long) (daysAmount * (1.0 + Double.parseDouble(req.getParameter("referred_bonus"))))
+								: daysAmount;
+						bonusDaysAmount = totalDaysAmount - daysAmount;
+
 						//Setting plan referral ?bonus
-						DbHandler.getInstance().setPlan(
-								client.getId(),
-								client.getReferredFrom() != -1 && client.getSubscrTo() - client.getRegTime() < 5 * 86400
-										? (long) (Integer.parseInt(req.getParameter("days_amount")) * (1.0 + Double.parseDouble(req.getParameter("referred_bonus"))))
-										: Integer.parseInt(req.getParameter("days_amount")),
-								2,
-								req.getParameter("country_from"),
-								client.getServer() != null
-										? "--"
-										: "OP");
-
-						//Checking referrer insistence
-						if (client.getReferredFrom() != -1)
-							//Adding bonus to referral
-							DbHandler.getInstance().addRefDays(
-									client.getReferredFrom(),
-									(int) (Integer.parseInt(req.getParameter("days_amount")) * Double.parseDouble(req.getParameter("referred_cashback"))));
-
-						//Adding successful payment record
-						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
-								client.getId() + "|" + System.currentTimeMillis(),
-								"0.00",
-								String.valueOf((int) (Integer.parseInt(req.getParameter("days_amount")) * Double.parseDouble(req.getParameter("referred_cashback")))),
-								req.getParameter("coupon"),
-								client.getId(),
-								System.currentTimeMillis() / 1000L,
-								"COUPON"
-						);
-					} else {
-						//Setting plan referral ?bonus
-						double couponBonus = 0.00, refBonus = 0.00;
-						if (!req.getParameter("coupon").isBlank()) {
-							couponBonus = Double.parseDouble(req.getParameter("coupon").replaceAll("^.*\\|", "")) / 100.00;
-						}
-
-						if (client.getReferredFrom() != -1 && client.getSubscrTo() - client.getRegTime() < 5 * 86400) {
-							refBonus = Double.parseDouble(req.getParameter("referred_bonus"));
-						}
-
-						long totalDaysAmount = (long) (Integer.parseInt(req.getParameter("days_amount")) * (1.0 + refBonus + couponBonus));
 						DbHandler.getInstance().setPlan(
 								client.getId(),
 								totalDaysAmount,
@@ -308,21 +282,75 @@ public class APIServlet extends HttpServlet {
 							//Adding bonus to referral
 							DbHandler.getInstance().addRefDays(
 									client.getReferredFrom(),
-									(int) (Integer.parseInt(req.getParameter("days_amount")) * Double.parseDouble(req.getParameter("referred_cashback"))));
+									(int) (daysAmount * Double.parseDouble(req.getParameter("referred_cashback"))));
 
 						//Adding successful payment record
 						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
-								client.getId() + "|" + req.getParameter("inv_id"),
-								req.getParameter("fee"),
+								client.getId() + "|" + System.currentTimeMillis(),
+								currLabel + fee,
 								String.valueOf(totalDaysAmount),
 								req.getParameter("coupon"),
 								client.getId(),
 								System.currentTimeMillis() / 1000L,
-								req.getParameter("payment_type")
+								"COUPON"
 						);
+					} else if (paymentType.equals("Robokassa")) {
+						//Setting plan referral ?bonus
+						double couponBonus = 0.00, refBonus = 0.00;
+						if (!req.getParameter("coupon").isBlank())
+							couponBonus = Double.parseDouble(req.getParameter("coupon").replaceAll("^.*\\|", "")) / 100.00;
+
+						if (client.getReferredFrom() != -1 && client.getSubscrTo() - client.getRegTime() < 5 * 86400)
+							refBonus = Double.parseDouble(req.getParameter("referred_bonus"));
+
+						daysAmount = Integer.parseInt(req.getParameter("days_amount"));
+						totalDaysAmount = (long) (daysAmount * (1.0 + refBonus + couponBonus));
+						bonusDaysAmount = totalDaysAmount - daysAmount;
+						fee = req.getParameter("fee");
+
+						DbHandler.getInstance().setPlan(
+								client.getId(),
+								totalDaysAmount,
+								2,
+								req.getParameter("country_from"),
+								client.getServer() != null
+										? "--"
+										: "OP");
+
+						//Checking referrer insistence
+						if (client.getReferredFrom() != -1)
+							//Adding bonus to referral
+							DbHandler.getInstance().addRefDays(
+									client.getReferredFrom(),
+									(int) (daysAmount * Double.parseDouble(req.getParameter("referred_cashback"))));
+
+						//Adding successful payment record
+						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
+								client.getId() + "|" + req.getParameter("inv_id"),
+								currLabel + fee,
+								String.valueOf(totalDaysAmount),
+								req.getParameter("coupon"),
+								client.getId(),
+								System.currentTimeMillis() / 1000L,
+								paymentType
+						);
+					} else {
+						Logger.getInstance().add("Platform intrusion detected!!!", Logger.WARNING, "remote_addr: \"" + req.getRemoteAddr() + "\"");
+						return;
 					}
 
-					Logger.getInstance().add("Payment", client.getId(), Logger.INFO, "Associated payment id: #" + paymentRecordId);
+					Logger.getInstance().add(
+							"Payment",
+							client.getId(),
+							Logger.INFO,
+							"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
+									"payment_id: \"" + paymentRecordId + "\", " +
+									"days_amount: \"" + daysAmount + "\", " +
+									"payment_type: \"" + paymentType + "\", " +
+									"fee: \"" + fee + "\", " +
+									"curr_label: \"" + currLabel + "\", " +
+									"bonus_days_amount: \"" + bonusDaysAmount + "\", " +
+									"total_days_amount: \"" + totalDaysAmount + "\"");
 					break;
 
 				case "activateReferralBonus":
@@ -344,7 +372,7 @@ public class APIServlet extends HttpServlet {
 						//Adding successful payment record
 						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
 								client.getId() + "|" + id,
-								String.valueOf(0),
+								"RUB0.00",
 								String.valueOf(refDaysAmount),
 								"",
 								client.getId(),
