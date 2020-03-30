@@ -176,7 +176,8 @@ public class Model {
 	 */
 	public void checkSubscriptions() throws SQLException {
 		List<Client> expiredClients = DbHandler.getInstance().getExpiredNotClearedClients();
-		String expiredClientsString = expiredClients.size() + ", including #" + expiredClients.stream().map(client -> String.valueOf(client.getId())).collect(Collectors.joining(", #"));
+		String expiredClientsString = "total_amount: " + expiredClients.size() + ", client_ids_list: \"" + expiredClients.stream().map(client -> String.valueOf(client.getId())).collect(Collectors.joining(", ")) + "\"";
+		Logger.getInstance().add("Expired subs removal", Logger.INFO, expiredClientsString);
 		while (expiredClients.size() > 0) {
 			for (Client tClient : expiredClients) {
 				if (tClient.getServer() == null) {
@@ -185,10 +186,10 @@ public class Model {
 				}
 				Model.getInstance().deleteRemoteSubscription(tClient);
 				DbHandler.getInstance().deleteSubscriptionServer(tClient.getId());
+				Logger.getInstance().add("Subscription expired", tClient.getSubscrTo(), tClient.getId(), Logger.INFO, "");
 			}
 			expiredClients = DbHandler.getInstance().getExpiredNotClearedClients();
 		}
-		Logger.getInstance().add("Expired subs removal", Logger.INFO, expiredClientsString);
 	}
 
 
