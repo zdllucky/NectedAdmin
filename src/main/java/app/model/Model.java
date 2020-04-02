@@ -199,7 +199,7 @@ public class Model {
 	 * @throws SQLException if database operation error
 	 */
 	public void checkMailingTasks() throws SQLException {
-		List<MailingTask> pendingTasks = DbHandler.getInstance().getTotalMailingTasksAmount() > 0
+		List<MailingTask> pendingTasks = DbHandler.getInstance().getTotalMailingTasksAmount(true) > 0
 				? DbHandler.getInstance().getMailingTasksList(
 				System.currentTimeMillis(),
 				DbHandler.getInstance().getMailingTemplateList(true))
@@ -212,7 +212,7 @@ public class Model {
 					params.add(new Pair<>("o:tag", "offer"));
 
 				if (task.isPersonal()
-						&& DbHandler.getInstance().executeRawQuery(task.getTemplate().getSQLApproval()).get(1).get(0).equals("true")) {
+						&& DbHandler.getInstance().executeRawQuery((task.getTemplate().getSQLApproval()).replace("<$CLIENT.ID$>", task.getSelection())).get(1).get(0).equals("true")) {
 					Client client = DbHandler.getInstance().getClient(Integer.parseInt(task.getSelection()));
 
 					String subject = EmailSender.getInstance().parseMessage(

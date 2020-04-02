@@ -39,7 +39,7 @@ public class MailingsServlet extends HttpServlet {
 
 			int tPage = req.getParameter("tp") != null ? Integer.parseInt(req.getParameter("tp")) : 1;
 			int tBy = req.getParameter("tby") != null ? Integer.parseInt(req.getParameter("tby")) : 50;
-			int tTotalAmount = DbHandler.getInstance().getTotalMailingTasksAmount();
+			int tTotalAmount = DbHandler.getInstance().getTotalMailingTasksAmount(false);
 
 			req.setAttribute("m_page", mPage);
 			req.setAttribute("m_by", mBy);

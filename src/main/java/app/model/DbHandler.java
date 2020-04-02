@@ -1497,7 +1497,7 @@ public class DbHandler {
 		return statement.executeUpdate() == 1 ? id : -1;
 	}
 
-	public int scheduleMassMailing(int templateId, Long activationTime, String SQLSelection) throws SQLException {
+	public int scheduleMassMailing(int templateId, long activationTime, String SQLSelection) throws SQLException {
 		PreparedStatement statement = this.connection.prepareStatement("INSERT " +
 				"INTO mailing_schedule(selection, activation_time, template_id) " +
 				"VALUES (?, ?, ?)");
@@ -1521,11 +1521,13 @@ public class DbHandler {
 		return statement.getGeneratedKeys().getInt(1);
 	}
 
-	public int getTotalMailingTasksAmount() throws SQLException {
+	public int getTotalMailingTasksAmount(boolean selectOutdatedOnly) throws SQLException {
 		return this.connection.createStatement().executeQuery("SELECT COUNT(*) " +
 				"AS amount " +
 				"FROM mailing_schedule " +
-				"WHERE activation_time > " + System.currentTimeMillis()).getInt("amount");
+				"WHERE activation_time " +
+				(selectOutdatedOnly ? "<" : ">") + " " +
+				System.currentTimeMillis()).getInt("amount");
 	}
 
 	public List<MailingTask> getMailingTasksList(int page, int by, List<MailingTemplate> templates) throws SQLException {
