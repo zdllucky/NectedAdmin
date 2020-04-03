@@ -6,6 +6,7 @@ import app.entities.Pair;
 import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
+import kong.unirest.json.JSONObject;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -50,7 +51,7 @@ public class EmailSender {
 
 	//Basic email sender API handler
 	@Deprecated
-	public Boolean sendEmail(String language,
+	public boolean sendEmail(String language,
 	                         String from,
 	                         String to,
 	                         int config_id,
@@ -87,7 +88,7 @@ public class EmailSender {
 	}
 
 	//Basic email sender API handler
-	public Boolean sendEmail(String from,
+	public boolean sendEmail(String from,
 	                         String to,
 	                         String subject,
 	                         String body,
@@ -108,6 +109,30 @@ public class EmailSender {
 				multipartBody.field(tParam.getKey(), tParam.getValue());
 
 		return multipartBody.asEmpty().isSuccess();
+	}
+
+	public String sendEmail(String from,
+	                        JSONObject to,
+	                        String subject,
+	                        String body,
+	                        List<Pair<String, String>> params) throws UnirestException {
+
+		//Preparing email query
+		MultipartBody multipartBody = Unirest
+				.post("https://api.mailgun.net/v3/" + Model.getInstance().getSystemConfigValue("support_mailbox_domain") + "/messages")
+				.basicAuth("api", Model.getInstance().getSystemConfigValue("mailgun_api_key"))
+				.field("from", from)
+				.field("to", to.keySet().iterator().next())
+				.field("recipient-variables", to.toString())
+				.field("subject", subject)
+				.field("html", body);
+
+
+		if (params != null)
+			for (Pair<String, String> tParam : params)
+				multipartBody.field(tParam.getKey(), tParam.getValue());
+
+		return multipartBody.asJson().getBody().toPrettyString();
 	}
 
 	public String parseMessage(String message, Client client, Map<String, String> logReferenceMap) {

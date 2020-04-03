@@ -7,6 +7,8 @@ import io.ipinfo.api.IPInfo;
 import io.ipinfo.api.cache.SimpleCache;
 import io.ipinfo.api.errors.RateLimitedException;
 import io.ipinfo.api.model.IPResponse;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 
 import javax.servlet.http.HttpSession;
 import java.net.InetAddress;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Model {
@@ -28,10 +31,19 @@ public class Model {
 	private static volatile List<Integer> lockedServers = new ArrayList<>();
 	private static IPInfo ipInfo;
 	private static HashMap<String, String> systemConfigs;
-	private static Thread clientCheckerThread = null;
-	private static Thread mailingCheckerThread = null;
+	private static String clientCheckerThreadName = "";
+	private static String mailingCheckerThreadName = "";
 
 	private static Long systemStartTime = Long.MAX_VALUE;
+
+	private Model() {
+		try {
+			//Initialisation
+			//Database & system configs initialisation
+			updateSystemConfigsList();
+		} catch (SQLException ignored) {
+		}
+	}
 
 	/**
 	 * @return {@link Model} object singleton
@@ -41,9 +53,7 @@ public class Model {
 			instance = new Model();
 
 			try {
-				//Initialisation
-				//Database & system configs initialisation
-				Model.getInstance().updateSystemConfigsList();
+
 
 				//IPResolver initialisation
 				ipInfo = IPInfo
@@ -58,12 +68,18 @@ public class Model {
 				systemStartTime = System.currentTimeMillis();
 
 				//Starting expired clients server data cleanup
-				if (instance.getSystemConfigValue("subscriptions_autoremoval").equals("ON"))
-					(clientCheckerThread = new Thread(new ClientChecker())).start();
+				if (instance.getSystemConfigValue("subscriptions_autoremoval").equals("ON")) {
+					Thread t = new Thread(new ClientChecker());
+					t.setName(clientCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+					t.start();
+				}
 
 				//Starting expired clients server data cleanup
-				if (instance.getSystemConfigValue("auto_mailing").equals("ON"))
-					(clientCheckerThread = new Thread(new MailingChecker())).start();
+				if (instance.getSystemConfigValue("auto_mailing").equals("ON")) {
+					Thread t = new Thread(new MailingChecker());
+					t.setName(mailingCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+					t.start();
+				}
 
 				Logger.getInstance().add("System initialization", Logger.INFO, instance.getSystemConfigsList().toString());
 			} catch (Exception e) {
@@ -133,15 +149,15 @@ public class Model {
 	 */
 	public void resetClientCheckerThread(long checkerCreationTime) {
 		if (Model.getInstance().getSystemConfigValue("subscriptions_autoremoval").equals("ON")) {
-			if (Thread.currentThread().getName().equals(clientCheckerThread.getName())
+			if (clientCheckerThreadName.equals(Thread.currentThread().getName())
 					&& checkerCreationTime > systemStartTime) {
-				clientCheckerThread = new Thread(new ClientChecker());
-				clientCheckerThread.setName(String.valueOf(System.currentTimeMillis()));
-				clientCheckerThread.start();
+				Thread t = new Thread(new ClientChecker());
+				t.setName(clientCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+				t.start();
 			}
 
 		} else {
-			clientCheckerThread = null;
+			clientCheckerThreadName = "";
 		}
 	}
 
@@ -158,14 +174,14 @@ public class Model {
 	 */
 	public void resetMailingCheckerThread(long checkerCreationTime) {
 		if (Model.getInstance().getSystemConfigValue("auto_mailing").equals("ON")) {
-			if (Thread.currentThread().getName().equals(mailingCheckerThread.getName())
+			if (mailingCheckerThreadName.equals(Thread.currentThread().getName())
 					&& checkerCreationTime > systemStartTime) {
-				mailingCheckerThread = new Thread(new MailingChecker());
-				mailingCheckerThread.setName(String.valueOf(System.currentTimeMillis()));
-				mailingCheckerThread.start();
+				Thread t = new Thread(new MailingChecker());
+				t.setName(mailingCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+				t.start();
 			}
 		} else {
-			mailingCheckerThread = null;
+			mailingCheckerThreadName = "";
 		}
 	}
 
@@ -231,33 +247,67 @@ public class Model {
 							body,
 							params);
 				} else if (!task.isPersonal()) {
-					HashMap<String, String> mailingClientCredentials = DbHandler.getInstance().getClientCredentials(task.getSelection());
+					HashMap<String, String> mailingClientCredentials = DbHandler.getInstance().getClientCredentials(task.getSelection(), true);
+
+					List<String> enCreds = mailingClientCredentials.entrySet()
+							.stream()
+							.filter(c -> c.getValue().equals("en"))
+							.map(Map.Entry::getKey).collect(Collectors.toList());
+
+					int i;
+					for (i = 0; i < enCreds.size() / 1000; i++) {
+						EmailSender.getInstance().sendEmail(
+								EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_en"),
+								new JSONObject(
+										enCreds.subList(i * 1000, (i + 1) * 1000)
+												.stream()
+												.collect(Collectors.toMap(Function.identity(), s -> new JSONArray()))),
+								task.getTemplate().getSubject("en"),
+								task.getTemplate().getBody("en"),
+								params);
+					}
 
 					EmailSender.getInstance().sendEmail(
 							EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_en"),
-							mailingClientCredentials.entrySet()
-									.stream()
-									.filter(c -> c.getValue().equals("en"))
-									.map(Map.Entry::getKey)
-									.collect(Collectors.joining(",")),
+							new JSONObject(
+									enCreds.subList(i * 1000, enCreds.size())
+											.stream()
+											.collect(Collectors.toMap(Function.identity(), s -> new JSONArray()))),
 							task.getTemplate().getSubject("en"),
 							task.getTemplate().getBody("en"),
 							params);
 
+					List<String> ruCreds = mailingClientCredentials.entrySet()
+							.stream()
+							.filter(c -> c.getValue().equals("ru"))
+							.map(Map.Entry::getKey).collect(Collectors.toList());
+
+					for (i = 0; i < ruCreds.size() / 1000; i++) {
+						EmailSender.getInstance().sendEmail(
+								EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_ru"),
+								new JSONObject(
+										ruCreds.subList(i * 1000, (i + 1) * 1000)
+												.stream()
+												.collect(Collectors.toMap(Function.identity(), s -> new JSONArray()))),
+								task.getTemplate().getSubject("ru"),
+								task.getTemplate().getBody("ru"),
+								params);
+					}
+
 					EmailSender.getInstance().sendEmail(
 							EmailSender.CREDENTIALS.get(task.getTemplate().getCredentials() + "_ru"),
-							mailingClientCredentials.entrySet()
-									.stream()
-									.filter(c -> c.getValue().equals("ru"))
-									.map(Map.Entry::getKey)
-									.collect(Collectors.joining(",")),
+							new JSONObject(
+									ruCreds.subList(i * 1000, ruCreds.size())
+											.stream()
+											.collect(Collectors.toMap(Function.identity(), s -> new JSONArray()))),
 							task.getTemplate().getSubject("ru"),
 							task.getTemplate().getBody("ru"),
 							params);
 				}
 				DbHandler.getInstance().removeMailingTask(task.getId());
-			} catch (Exception ignored) {
+			} catch (Exception e) {
 				DbHandler.getInstance().removeMailingTask(task.getId());
+				Logger.getInstance().add("Mail sending exception", Logger.ERROR, Logger.parseException(e));
 			}
 		}
 		Logger.getInstance().add("Automailing",
@@ -346,15 +396,21 @@ public class Model {
 		} else throw new SQLException();
 
 		if ((option.equals("autoremoval_timer") && systemConfigs.get("subscriptions_autoremoval").equals("ON"))
-				|| option.equals("subscriptions_autoremoval") && value.equals("ON"))
-			(clientCheckerThread = new Thread(new ClientChecker())).start();
+				|| option.equals("subscriptions_autoremoval") && value.equals("ON")) {
+			Thread t = new Thread(new ClientChecker());
+			t.setName(clientCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+			t.start();
+		}
 
 		if (option.equals("auto_mailing") && value.equals("ON"))
 			DbHandler.getInstance().clearMailingTaskList(System.currentTimeMillis());
 
 		if ((option.equals("mailing_timer") && systemConfigs.get("auto_mailing").equals("ON"))
-				|| option.equals("auto_mailing") && value.equals("ON"))
-			(mailingCheckerThread = new Thread(new MailingChecker())).start();
+				|| option.equals("auto_mailing") && value.equals("ON")) {
+			Thread t = new Thread(new MailingChecker());
+			t.setName(mailingCheckerThreadName = String.valueOf(System.currentTimeMillis()));
+			t.start();
+		}
 	}
 
 }

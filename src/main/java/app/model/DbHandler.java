@@ -1610,16 +1610,23 @@ public class DbHandler {
 		return templates;
 	}
 
-	public HashMap<String, String> getClientCredentials(String SQLSelection) throws SQLException {
-		ResultSet resultSet = this.connection.createStatement().executeQuery("SELECT client_name, email, `language` FROM clients WHERE " + SQLSelection);
+	public HashMap<String, String> getClientCredentials(String SQLSelection, boolean onlyEmailRequired) throws SQLException {
+		ResultSet resultSet;
 		HashMap<String, String> credentials = new HashMap<>();
-
-		while (resultSet.next())
-			credentials.put(EmailSender.getInstance().parseContact(
-					resultSet.getString(2),
-					resultSet.getString(1)),
-					resultSet.getString(3));
-
+		if (onlyEmailRequired) {
+			resultSet = this.connection.createStatement().executeQuery("SELECT email, `language` FROM clients WHERE " + SQLSelection);
+			while (resultSet.next())
+				credentials.put(
+						resultSet.getString(1),
+						resultSet.getString(2));
+		} else {
+			resultSet = this.connection.createStatement().executeQuery("SELECT client_name, email, `language` FROM clients WHERE " + SQLSelection);
+			while (resultSet.next())
+				credentials.put(EmailSender.getInstance().parseContact(
+						resultSet.getString(2),
+						resultSet.getString(1)),
+						resultSet.getString(3));
+		}
 		return credentials;
 	}
 
