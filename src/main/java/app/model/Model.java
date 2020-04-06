@@ -192,7 +192,7 @@ public class Model {
 	 */
 	public void checkSubscriptions() throws SQLException {
 		List<Client> expiredClients = DbHandler.getInstance().getExpiredNotClearedClients();
-		String expiredClientsString = "total_amount: " + expiredClients.size() + ", client_ids_list: \"" + expiredClients.stream().map(client -> String.valueOf(client.getId())).collect(Collectors.joining(", ")) + "\"";
+		String expiredClientsString = "total_amount: \"" + expiredClients.size() + "\", client_ids_list: \"" + expiredClients.stream().map(client -> String.valueOf(client.getId())).collect(Collectors.joining(", ")) + "\"";
 		Logger.getInstance().add("Expired subs removal", Logger.INFO, expiredClientsString);
 		while (expiredClients.size() > 0) {
 			for (Client tClient : expiredClients) {

@@ -21,12 +21,12 @@ public class EmailSender {
 
 	static {
 		HashMap<String, String> credentials = new HashMap<>();
-		credentials.put("informer_box_ru", "Информер Vpnnected.com <info@support.vpnnected.com>");
-		credentials.put("informer_box_en", "Vpnnected.com Informer <info@support.vpnnected.com>");
-		credentials.put("ads_box_ru", "Центр предложений Vpnnected.com <no-reply@offers.vpnnected.com>");
-		credentials.put("ads_box_en", "Vpnnected.com Offers center <no-reply@offers.vpnnected.com>");
-		credentials.put("moderator_box_ru", "Служба поддержки Vpnnected.com <moderator@support.vpnnected.com>");
-		credentials.put("moderator_box_en", "Vpnnected.com Support center <moderator@support.vpnnected.com>");
+		credentials.put("informer_box_ru", "Информер VPNnected <no-reply@info.vpnnected.com>");
+		credentials.put("informer_box_en", "VPNnected Informer <no-reply@info.vpnnected.com>");
+		credentials.put("ads_box_ru", "Центр предложений VPNnected <no-reply@offers.vpnnected.com>");
+		credentials.put("ads_box_en", "VPNnected Offers center <no-reply@offers.vpnnected.com>");
+		credentials.put("moderator_box_ru", "Служба поддержки VPNnected <no-reply@support.vpnnected.com>");
+		credentials.put("moderator_box_en", "VPNnected Support center <no-reply@support.vpnnected.com>");
 		CREDENTIALS = credentials;
 	}
 
