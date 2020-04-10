@@ -233,18 +233,26 @@ public class EmailSender {
 
 					varResult = logReferenceMap.getOrDefault(var, "");
 				} else if (var.startsWith("COUPON.")) {
-					String addr = logReferenceMap.get("initiator");
 					var = var.substring(7);
+					String addr;
+					if (logReferenceMap.get("initiator") != null)
+						addr = logReferenceMap.get("initiator");
+					else {
+						addr = var.substring(0, var.indexOf('.'));
+					}
+
+					if (var.substring(0, var.indexOf('.')).matches("[a-z0-9:-]+"))
+						var = var.substring(var.indexOf('.') + 1);
 
 					String[] vals = var.split("\\.");
 
 					varResult = Unirest
-							.post("https://" + addr + "/coupons")
+							.post("https://" + addr.replace(':', '.') + "/coupons")
 							.field("action", "new_api")
 							.field("type", String.valueOf(vals[0].equals("PERC") ? 1 : 2))
 							.field("value", String.valueOf(vals[0].equals("PERC")
 									? Math.abs(Integer.parseInt(vals[2])) % 91
-									: Math.abs(Integer.parseInt(vals[2]) - 7) % 177 + 7))
+									: Math.abs(Integer.parseInt(vals[2])) % 183))
 							.field("expiration_type", String.valueOf(vals[1].equals("DAYS") ? 1 : 2))
 							.field("expired_by", String.valueOf(vals[2].equals("DAYS")
 									? Math.abs(Integer.parseInt(vals[3])) % 732

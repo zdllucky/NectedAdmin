@@ -4,6 +4,13 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+    <session-config>
+        <session-timeout>120</session-timeout>
+        <cookie-config>
+            <max-age>120</max-age>
+        </cookie-config>
+    </session-config>
+
     <servlet>
         <servlet-name>login</servlet-name>
         <servlet-class>app.servlets.LoginServlet</servlet-class>
