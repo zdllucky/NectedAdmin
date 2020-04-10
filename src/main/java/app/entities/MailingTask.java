@@ -1,15 +1,16 @@
 package app.entities;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MailingTask {
-	private long id;
-	private String selection;
-	private long activationTime;
-	private MailingTemplate template;
-	private String logReference;
+	private final long id;
+	private final String selection;
+	private final long activationTime;
+	private final MailingTemplate template;
+	private final String logReference;
 	private Map<String, String> logReferenceMap = null;
 
 	public MailingTask(long id, String selection, long activationTime, MailingTemplate template, String logReference) {
@@ -21,7 +22,8 @@ public class MailingTask {
 	}
 
 	public static Map<String, String> parseLogReference(String reference) {
-
+		if (reference.isBlank())
+			return new HashMap<>();
 		return Arrays
 				.stream(reference.split(","))
 				.map(s -> s.split(":", 2))

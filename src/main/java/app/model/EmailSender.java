@@ -3,6 +3,7 @@ package app.model;
 import app.entities.Client;
 import app.entities.EmailConfig;
 import app.entities.Pair;
+import kong.unirest.HttpResponse;
 import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -246,7 +247,7 @@ public class EmailSender {
 
 					String[] vals = var.split("\\.");
 
-					varResult = Unirest
+					HttpResponse<String> out = Unirest
 							.post("https://" + addr.replace(':', '.') + "/coupons")
 							.field("action", "new_api")
 							.field("type", String.valueOf(vals[0].equals("PERC") ? 1 : 2))
@@ -257,7 +258,8 @@ public class EmailSender {
 							.field("expired_by", String.valueOf(vals[2].equals("DAYS")
 									? Math.abs(Integer.parseInt(vals[3])) % 732
 									: Math.abs(Integer.parseInt(vals[3])) % 5000))
-							.asString().getBody();
+							.asString();
+					varResult = out.getBody();
 				}
 			} catch (Exception ignored) {
 			}
