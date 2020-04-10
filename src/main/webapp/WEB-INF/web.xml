@@ -5,9 +5,9 @@
          version="4.0">
 
     <session-config>
-        <session-timeout>120</session-timeout>
+        <session-timeout>7200</session-timeout>
         <cookie-config>
-            <max-age>120</max-age>
+            <max-age>432000</max-age>
         </cookie-config>
     </session-config>
 
@@ -20,6 +20,7 @@
         <servlet-name>login</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
+
 
     <!-- servers list servlet -->
     <servlet>
