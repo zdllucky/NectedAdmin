@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class APIServlet extends HttpServlet {
-	private JsonObject jsonReply = new JsonObject();
+	private final JsonObject jsonReply = new JsonObject();
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -248,7 +248,7 @@ public class APIServlet extends HttpServlet {
 					client = DbHandler.getInstance().getClient(Integer.parseInt(req.getParameter("id")));
 
 					//Payment record id
-					int paymentRecordId;
+					String paymentRecordId;
 
 					long daysAmount;
 					long totalDaysAmount;
@@ -285,8 +285,8 @@ public class APIServlet extends HttpServlet {
 									(int) (daysAmount * Double.parseDouble(req.getParameter("referred_cashback"))));
 
 						//Adding successful payment record
-						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
-								client.getId() + "|" + System.currentTimeMillis(),
+						DbHandler.getInstance().addPaymentRecord(
+								client.getId() + "T" + System.currentTimeMillis(),
 								currLabel + fee,
 								String.valueOf(totalDaysAmount),
 								req.getParameter("coupon"),
@@ -294,6 +294,8 @@ public class APIServlet extends HttpServlet {
 								System.currentTimeMillis() / 1000L,
 								"COUPON"
 						);
+
+						paymentRecordId = client.getId() + "T" + System.currentTimeMillis();
 					} else if (paymentType.equals("Robokassa")) {
 						//Setting plan referral ?bonus
 						double couponBonus = 0.00, refBonus = 0.00;
@@ -325,8 +327,9 @@ public class APIServlet extends HttpServlet {
 									(int) (daysAmount * Double.parseDouble(req.getParameter("referred_cashback"))));
 
 						//Adding successful payment record
-						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
-								client.getId() + "|" + req.getParameter("inv_id"),
+						paymentRecordId = req.getParameter("inv_id");
+						DbHandler.getInstance().addPaymentRecord(
+								req.getParameter("inv_id"),
 								currLabel + fee,
 								String.valueOf(totalDaysAmount),
 								req.getParameter("coupon"),
@@ -357,11 +360,10 @@ public class APIServlet extends HttpServlet {
 					//Gathering client data
 					client = DbHandler.getInstance().getClient(Integer.parseInt(req.getParameter("id")));
 					resp.setStatus(400);
-					int paymentRecordId;
+					String paymentRecordId;
 
 					if (client.getRefDays() > 0) {
 						int refDaysAmount = client.getRefDays();
-						id = (int) (Long.parseLong(RandomStringUtils.randomNumeric(10)) % (Math.pow(2, 31) - 1));
 						DbHandler.getInstance().setPlan(
 								client.getId(),
 								refDaysAmount,
@@ -371,8 +373,9 @@ public class APIServlet extends HttpServlet {
 										? "--"
 										: "OP");
 						//Adding successful payment record
-						paymentRecordId = DbHandler.getInstance().addPaymentRecord(
-								client.getId() + "|" + id,
+						paymentRecordId = client.getId() + "T" + System.currentTimeMillis();
+						DbHandler.getInstance().addPaymentRecord(
+								client.getId() + "T" + System.currentTimeMillis(),
 								"RUB0.00",
 								String.valueOf(refDaysAmount),
 								"",

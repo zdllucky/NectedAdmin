@@ -11,6 +11,7 @@
         </cookie-config>
     </session-config>
 
+
     <servlet>
         <servlet-name>login</servlet-name>
         <servlet-class>app.servlets.LoginServlet</servlet-class>
