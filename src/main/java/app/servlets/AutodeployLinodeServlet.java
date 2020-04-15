@@ -27,7 +27,7 @@ public class AutodeployLinodeServlet extends HttpServlet {
 			req.setAttribute("default_country", Model.getInstance().getSystemConfigValue("default_country"));
 			req.setAttribute("allowed_fulfillment", Model.getInstance().getSystemConfigValue("allowed_fulfillment"));
 			req.setAttribute("countries", DbHandler.getInstance().getCountriesList("OP"));
-			req.setAttribute("markups", DbHandler.getInstance().getLinodeMarkupList());
+			req.setAttribute("markups", DbHandler.getInstance().getLinodeMarkupList(false));
 			req.setAttribute("servers", DbHandler.getInstance().getServersByInitiator("LIN"));
 			req.getRequestDispatcher("/views/linode_autodeploy_configs.jsp").forward(req, resp);
 		} catch (SQLException e) {

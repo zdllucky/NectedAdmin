@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class DbHandler {
 	private static final String DB_PATH = "jdbc:sqlite:/var/lib/tomcat9/NectedDB/main";
 	private static DbHandler instance = null;
-	private Connection connection;
+	private final Connection connection;
 
 	private DbHandler() throws SQLException {
 		Properties SQLProps = new Properties();
@@ -953,14 +953,19 @@ public class DbHandler {
 	}
 
 	/**
+	 * @param ifFilterExisting whether to show only unused but active markups
 	 * @return {@link ArrayList<LinodeMarkup>} of all linode instance deployment markups
 	 * @throws SQLException if query error
 	 */
-	public List<LinodeMarkup> getLinodeMarkupList() throws SQLException {
+	public List<LinodeMarkup> getLinodeMarkupList(boolean ifFilterExisting) throws SQLException {
 		ResultSet resultSet = this.connection
 				.createStatement()
 				.executeQuery("SELECT id, country, instance_type, user_limit, location_name, enabled " +
-						"FROM linode_markups");
+						"FROM linode_markups m" +
+						(ifFilterExisting
+								? " WHERE enabled = 1 AND (SELECT COUNT(*) FROM servers WHERE country LIKE m.country) == 0"
+								: ""));
+
 		List<LinodeMarkup> linodeMarkupList = new ArrayList<>();
 		while (resultSet.next())
 			linodeMarkupList.add(new LinodeMarkup(

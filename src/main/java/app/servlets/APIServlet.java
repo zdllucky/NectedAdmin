@@ -1,14 +1,14 @@
 package app.servlets;
 
 import app.entities.Client;
-import app.entities.NoServerFoundException;
+import app.entities.LinodeMarkup;
 import app.entities.Server;
 import app.model.DbHandler;
+import app.model.LinodeInstanceDeployer;
 import app.model.Logger;
 import app.model.Model;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.servlet.http.HttpServlet;
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class APIServlet extends HttpServlet {
@@ -393,8 +394,36 @@ public class APIServlet extends HttpServlet {
 						throw new NullPointerException("ref_days amount is 0");
 					}
 					break;
+				case "getAvailableToDeployCountries":
+					List<LinodeMarkup> deployableCountries = DbHandler.getInstance().getLinodeMarkupList(true);
+					JsonArray deployableCountriesJSONArray = new JsonArray(deployableCountries.size());
+
+					for (LinodeMarkup tMarkup : deployableCountries)
+						deployableCountriesJSONArray.add(tMarkup.getCountry());
+
+					jsonReply.add("deployableCountries", deployableCountriesJSONArray);
+					break;
+				case "deployNewCountry":
+					String country = req.getParameter("country");
+					int markupId = DbHandler.getInstance()
+							.getMarkup(country)
+							.getId();
+
+					new Thread(
+							new LinodeInstanceDeployer(markupId)).start();
+
+					Logger.getInstance().add(
+							"Country deployment request",
+							Integer.parseInt(req.getParameter("client_id")),
+							Logger.INFO,
+							"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
+									"country: \"" + country + "\", " +
+									"markup_id: \"" + markupId + "\"");
+					break;
+				default:
+					throw new IllegalArgumentException("Headers not defined!");
 			}
-		} catch (SQLException | NumberFormatException | NullPointerException | JSchException | InterruptedException | NoServerFoundException e) {
+		} catch (Exception e) {
 			if (client == null)
 				Logger.getInstance().add("\"" + command + "\"" + " API command exception", Logger.ERROR, Logger.parseException(e));
 			else
