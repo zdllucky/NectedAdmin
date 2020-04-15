@@ -77,6 +77,14 @@ public class APIServlet extends HttpServlet {
 					JsonArray array = new JsonArray(countries.size());
 					for (String tCountry : countries)
 						array.add(tCountry);
+
+					List<LinodeMarkup> deployableCountries = DbHandler.getInstance().getLinodeMarkupList(true);
+					JsonArray deployableCountriesJSONArray = new JsonArray(deployableCountries.size());
+
+					for (LinodeMarkup tMarkup : deployableCountries)
+						deployableCountriesJSONArray.add(tMarkup.getCountry());
+
+					jsonReply.add("deployableCountries", deployableCountriesJSONArray);
 					jsonReply.add("countries", array);
 					break;
 
@@ -394,31 +402,25 @@ public class APIServlet extends HttpServlet {
 						throw new NullPointerException("ref_days amount is 0");
 					}
 					break;
-				case "getAvailableToDeployCountries":
-					List<LinodeMarkup> deployableCountries = DbHandler.getInstance().getLinodeMarkupList(true);
-					JsonArray deployableCountriesJSONArray = new JsonArray(deployableCountries.size());
-
-					for (LinodeMarkup tMarkup : deployableCountries)
-						deployableCountriesJSONArray.add(tMarkup.getCountry());
-
-					jsonReply.add("deployableCountries", deployableCountriesJSONArray);
-					break;
 				case "deployNewCountry":
 					String country = req.getParameter("country");
 					int markupId = DbHandler.getInstance()
 							.getMarkup(country)
 							.getId();
 
-					new Thread(
-							new LinodeInstanceDeployer(markupId)).start();
-
-					Logger.getInstance().add(
-							"Country deployment request",
-							Integer.parseInt(req.getParameter("client_id")),
-							Logger.INFO,
-							"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
-									"country: \"" + country + "\", " +
-									"markup_id: \"" + markupId + "\"");
+					new Thread(() -> {
+						try {
+							new LinodeInstanceDeployer(markupId).run();
+							Logger.getInstance().add(
+									"Country deployment",
+									Integer.parseInt(req.getParameter("client_id")),
+									Logger.INFO,
+									"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
+											"country: \"" + country + "\", " +
+											"markup_id: \"" + markupId + "\"");
+						} catch (Exception ignored) {
+						}
+					}).start();
 					break;
 				default:
 					throw new IllegalArgumentException("Headers not defined!");
