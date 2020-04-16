@@ -15,14 +15,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LinodeInstanceDeployer implements Runnable {
-	private static List<String> initedCountries = new LinkedList<>();
+	private static final List<String> initedCountries = new LinkedList<>();
 
 	//Country to be checked for overflow and might init autodeployment
-	private String country;
+	private final String country;
 	private LinodeMarkup markup = null;
 
 	public LinodeInstanceDeployer(String country) {
 		this.country = country;
+	}
+
+	public static boolean checkInitedCountryBusiness(String country) {
+		return initedCountries.contains(country);
 	}
 
 	public LinodeInstanceDeployer(int markupId) throws SQLException {
@@ -72,7 +76,8 @@ public class LinodeInstanceDeployer implements Runnable {
 								.header("Authorization", "Bearer c6a65776e7ee252e26dc74a7411b2cacfd398bd490b64dbd449b0305bea534cd")
 								.header("Content-Type", "application/json")
 								.asJson().getBody().getObject().getString("status");
-						Thread.sleep(30000);
+						//noinspection BusyWait
+						Thread.sleep(3000);
 					}
 
 					//Adding new server instance to DB

@@ -968,13 +968,14 @@ public class DbHandler {
 
 		List<LinodeMarkup> linodeMarkupList = new ArrayList<>();
 		while (resultSet.next())
-			linodeMarkupList.add(new LinodeMarkup(
-					resultSet.getInt("id"),
-					resultSet.getString("country"),
-					resultSet.getString("instance_type"),
-					resultSet.getInt("user_limit"),
-					resultSet.getString("location_name"),
-					resultSet.getInt("enabled") == 1));
+			if (!LinodeInstanceDeployer.checkInitedCountryBusiness(resultSet.getString("country")))
+				linodeMarkupList.add(new LinodeMarkup(
+						resultSet.getInt("id"),
+						resultSet.getString("country"),
+						resultSet.getString("instance_type"),
+						resultSet.getInt("user_limit"),
+						resultSet.getString("location_name"),
+						resultSet.getInt("enabled") == 1));
 		return linodeMarkupList;
 	}
 

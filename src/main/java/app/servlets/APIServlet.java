@@ -404,6 +404,8 @@ public class APIServlet extends HttpServlet {
 					break;
 				case "deployNewCountry":
 					String country = req.getParameter("country");
+					if (LinodeInstanceDeployer.checkInitedCountryBusiness(country))
+						resp.setStatus(405);
 					int markupId = DbHandler.getInstance()
 							.getMarkup(country)
 							.getId();

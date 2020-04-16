@@ -28,7 +28,7 @@ public class Model {
 	public static final String SUCCESS = "success";
 	public static final String INFO = "info";
 	private static Model instance;
-	private static volatile List<Integer> lockedServers = new ArrayList<>();
+	private static final List<Integer> lockedServers = new ArrayList<>();
 	private static IPInfo ipInfo;
 	private static HashMap<String, String> systemConfigs;
 	private static String clientCheckerThreadName = "";
@@ -112,7 +112,8 @@ public class Model {
 	 */
 	public static synchronized void lockServer(int serverId) throws InterruptedException {
 		while (ifServerLocked(serverId))
-			Thread.sleep(50);
+			//noinspection BusyWait
+			Thread.sleep(500);
 		lockedServers.add(serverId);
 	}
 
