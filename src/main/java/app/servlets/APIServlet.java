@@ -411,18 +411,21 @@ public class APIServlet extends HttpServlet {
 							.getId();
 
 					new Thread(() -> {
+						int clientIdNew = Integer.parseInt(req.getParameter("client_id"));
+						String initiator = Model.getHostName(req.getRemoteAddr());
 						try {
 							new LinodeInstanceDeployer(markupId).run();
 							Logger.getInstance().add(
 									"Country deployment",
-									Integer.parseInt(req.getParameter("client_id")),
+									clientIdNew,
 									Logger.INFO,
-									"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
+									"initiator: \"" + initiator + "\", " +
 											"country: \"" + country + "\", " +
 											"country_name_ru: \"" + DbHandler.getInstance().getCountryName(country, "ru") + "\", " +
 											"country_name_en: \"" + DbHandler.getInstance().getCountryName(country, "en") + "\", " +
 											"markup_id: \"" + markupId + "\"");
-						} catch (Exception ignored) {
+						} catch (Exception e) {
+							Logger.getInstance().add("Country deployment log error", Logger.ERROR, "ex: \"" + Logger.parseException(e) + "\"");
 						}
 					}).start();
 					break;
