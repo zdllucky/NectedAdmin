@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class APIServlet extends HttpServlet {
-	private final JsonObject jsonReply = new JsonObject();
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		JsonObject jsonReply = new JsonObject();
 		resp.setStatus(200);
 		Model.getInstance();
 		String command = req.getHeader("operation");
@@ -404,15 +404,18 @@ public class APIServlet extends HttpServlet {
 					break;
 				case "deployNewCountry":
 					String country = req.getParameter("country");
-					if (LinodeInstanceDeployer.checkInitedCountryBusiness(country))
+					if (LinodeInstanceDeployer.checkInitedCountryBusiness(country)) {
 						resp.setStatus(405);
+						throw new IllegalAccessException("Irrelevent country");
+					}
 					int markupId = DbHandler.getInstance()
 							.getMarkup(country)
 							.getId();
 
+					int clientIdNew = Integer.parseInt(req.getParameter("client_id"));
+					String initiator = Model.getHostName(req.getRemoteAddr());
+
 					new Thread(() -> {
-						int clientIdNew = Integer.parseInt(req.getParameter("client_id"));
-						String initiator = Model.getHostName(req.getRemoteAddr());
 						try {
 							new LinodeInstanceDeployer(markupId).run();
 							Logger.getInstance().add(
