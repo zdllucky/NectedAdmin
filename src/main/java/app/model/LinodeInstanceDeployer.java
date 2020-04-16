@@ -56,7 +56,7 @@ public class LinodeInstanceDeployer implements Runnable {
 						.put("type", markup.getInstanceType())
 						.put("backups_enabled", false)
 						.put("booted", true)
-						.put("image", "linode/ubuntu19.04")
+						.put("image", "linode/ubuntu19.10")
 						.put("root_pass", rootPass);
 
 				//Sending instance creation API request to Linode
