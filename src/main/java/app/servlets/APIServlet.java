@@ -406,7 +406,6 @@ public class APIServlet extends HttpServlet {
 					String country = req.getParameter("country");
 					if (LinodeInstanceDeployer.checkInitedCountryBusiness(country)) {
 						resp.setStatus(405);
-						throw new IllegalAccessException("Irrelevent country");
 					}
 					int markupId = DbHandler.getInstance()
 							.getMarkup(country)
@@ -418,15 +417,16 @@ public class APIServlet extends HttpServlet {
 					new Thread(() -> {
 						try {
 							new LinodeInstanceDeployer(markupId).run();
-							Logger.getInstance().add(
-									"Country deployment",
-									clientIdNew,
-									Logger.INFO,
-									"initiator: \"" + initiator + "\", " +
-											"country: \"" + country + "\", " +
-											"country_name_ru: \"" + DbHandler.getInstance().getCountryName(country, "ru") + "\", " +
-											"country_name_en: \"" + DbHandler.getInstance().getCountryName(country, "en") + "\", " +
-											"markup_id: \"" + markupId + "\"");
+							if (DbHandler.getInstance().checkDeployment(country))
+								Logger.getInstance().add(
+										"Country deployment",
+										clientIdNew,
+										Logger.INFO,
+										"initiator: \"" + initiator + "\", " +
+												"country: \"" + country + "\", " +
+												"country_name_ru: \"" + DbHandler.getInstance().getCountryName(country, "ru") + "\", " +
+												"country_name_en: \"" + DbHandler.getInstance().getCountryName(country, "en") + "\", " +
+												"markup_id: \"" + markupId + "\"");
 						} catch (Exception e) {
 							Logger.getInstance().add("Country deployment log error", Logger.ERROR, "ex: \"" + Logger.parseException(e) + "\"");
 						}

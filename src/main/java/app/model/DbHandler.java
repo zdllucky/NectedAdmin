@@ -1639,4 +1639,10 @@ public class DbHandler {
 	public void clearMailingTaskList(long millisTime) throws SQLException {
 		this.connection.prepareStatement("DELETE FROM mailing_schedule WHERE activation_time < " + millisTime).execute();
 	}
+
+	public boolean checkDeployment(String country) throws SQLException {
+		return this.connection.createStatement().executeQuery("SELECT id " +
+				"FROM servers " +
+				"WHERE country LIKE '" + country + "' AND state = 1").next();
+	}
 }
