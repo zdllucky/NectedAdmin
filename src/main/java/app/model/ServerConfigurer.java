@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class ServerConfigurer implements Runnable {
-	private Server server;
+	private final Server server;
 
 	public ServerConfigurer(Server server) {
 		this.server = server;

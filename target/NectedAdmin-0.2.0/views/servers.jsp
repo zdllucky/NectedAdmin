@@ -274,7 +274,7 @@
                                 out.print("<div style=\"display: none;\" class=" + tStrike.getCountry() + "><strong class=\"" + (tStrike.getAmount() < 4 ? "text-secondary" : tStrike.getAmount() < 7 ? "text-warning" : "text-danger") + "\">" + tStrike.getAmount() + "</strong></div>");
 
                             out.print("</td><td>" +
-                                    "<span class=\"text-" + (server.getState() == Server.State.RUNNING ? "success\">Running" : server.getState() == Server.State.DEPRECATED ? "danger\">Deprecated" : server.getState() == Server.State.SETTING_UP ? "warning\">Configuring VPN" : "secondary\"Not set up") + "</span></td>" +
+                                    "<span class=\"text-" + (server.getState() == Server.State.RUNNING ? "success\">Running" : server.getState() == Server.State.DEPRECATED ? "danger\">Deprecated" : server.getState() == Server.State.SETTING_UP ? "warning\">Configuring VPN" : "secondary\">Not set up") + "</span></td>" +
                                     "<td>" + server.getProperty().substring(0, 3) +
                                     "</td></tr>");
                         } catch (SQLException e) {

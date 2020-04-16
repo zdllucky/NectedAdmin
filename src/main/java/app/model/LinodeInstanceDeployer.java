@@ -80,6 +80,7 @@ public class LinodeInstanceDeployer implements Runnable {
 						Thread.sleep(3000);
 					}
 
+					Thread.sleep(20000);
 					//Adding new server instance to DB
 					try {
 						serverId = DbHandler.getInstance().insertServer(
@@ -108,11 +109,11 @@ public class LinodeInstanceDeployer implements Runnable {
 					}
 				}
 			} catch (Exception ex) {
-				Logger.getInstance().add("New instance creation & adding", Logger.ERROR, "Country: " + country + "; " + Logger.parseException(ex));
+				Logger.getInstance().add("New instance creation & adding exception", Logger.ERROR, "Country: " + country + "; " + Logger.parseException(ex));
 			}
+			//Removing country lock
+			initedCountries.remove(country);
 		}
-		//Removing country lock
-		initedCountries.remove(country);
 	}
 
 	//Check if the country client amount exceeds N% of the limit & returns associated markup
