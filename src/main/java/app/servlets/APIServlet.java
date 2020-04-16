@@ -419,6 +419,8 @@ public class APIServlet extends HttpServlet {
 									Logger.INFO,
 									"initiator: \"" + Model.getHostName(req.getRemoteAddr()) + "\", " +
 											"country: \"" + country + "\", " +
+											"country_name_ru: \"" + DbHandler.getInstance().getCountryName(country, "ru") + "\", " +
+											"country_name_en: \"" + DbHandler.getInstance().getCountryName(country, "en") + "\", " +
 											"markup_id: \"" + markupId + "\"");
 						} catch (Exception ignored) {
 						}

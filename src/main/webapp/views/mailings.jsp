@@ -332,29 +332,29 @@
     </div>
     <div class="row mx-1">
         <div class="col align-content-end">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-end">
-                    <%
-                        if (tPage > 3) out.print("<li class=\"page-item\">" +
-                                "<a class=\"page-link\" href=\"" +
-                                getServletConfig().getServletContext().getContextPath() + "?tp=1&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">1</a></li>");
-
-                        if (tPage > 4)
-                            out.print("<li class=\"disabled page-item\"><a class=\"page-link\" href=\"#\">...</a></li>");
-
-                        for (int i = Math.max(1, tPage - 2); i < Math.min(tTotalAmount, tPage + 2) + 1; i++)
-                            out.println("<li  class=\"" + (i == tPage ? "disabled " : "") + "page-item\">" +
-                                    "<a class=\"page-link\" href=\"" +
-                                    getServletConfig().getServletContext().getContextPath() + "?tp=" + i + "&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">" +
-                                    i + "</a></li>");
-
-                        if (tPage < tTotalAmount - 3)
-                            out.print("<li class=\"disabled page-item\"><a class=\"page-link\" href=\"#\">...</a></li>");
-
-                        if (tPage < tTotalAmount - 2) out.print("<li class=\"page-item\">" +
-                                "<a class=\"page-link\" href=\"" +
-                                getServletConfig().getServletContext().getContextPath() + "?tp=" + tTotalAmount + "&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">" + tTotalAmount + "</a></li>");
-                    %>
+            <nav aria-label="Navigation" class="mt-3">
+                <ul class="pagination justify-content-center pagination-sm">
+                    <%if (tPage > 1) {%>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/mailing?tp=<%=tPage - 1%>&tby=<%=tBy%>&mp=<%=mPage%>&mby=<%=mBy%>"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <%}%>
+                    <li class="page-item active" aria-current="page"><span class="page-link"><%=tPage%>
+                                    <span class="sr-only">(current)</span>
+                                </span></li>
+                    <%if (tTotalAmount > Math.abs(tPage * tBy)) {%>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/mailing?tp=<%=tPage + 1%>&tby=<%=tBy%>&mp=<%=mPage%>&mby=<%=mBy%>"
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <%}%>
                 </ul>
             </nav>
         </div>
@@ -405,29 +405,29 @@
     </div>
     <div class="row mx-1">
         <div class="col align-content-end">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-end">
-                    <%
-                        if (tPage > 3) out.print("<li class=\"page-item\">" +
-                                "<a class=\"page-link\" href=\"" +
-                                getServletConfig().getServletContext().getContextPath() + "?tp=1&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">1</a></li>");
-
-                        if (tPage > 4)
-                            out.print("<li class=\"disabled page-item\"><a class=\"page-link\" href=\"#\">...</a></li>");
-
-                        for (int i = Math.max(1, tPage - 2); i < Math.min(tTotalAmount, tPage + 2) + 1; i++)
-                            out.println("<li  class=\"" + (i == tPage ? "disabled " : "") + "page-item\">" +
-                                    "<a class=\"page-link\" href=\"" +
-                                    getServletConfig().getServletContext().getContextPath() + "?tp=" + i + "&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">" +
-                                    i + "</a></li>");
-
-                        if (tPage < tTotalAmount - 3)
-                            out.print("<li class=\"disabled page-item\"><a class=\"page-link\" href=\"#\">...</a></li>");
-
-                        if (tPage < tTotalAmount - 2) out.print("<li class=\"page-item\">" +
-                                "<a class=\"page-link\" href=\"" +
-                                getServletConfig().getServletContext().getContextPath() + "?tp=" + tTotalAmount + "&tby=" + tBy + "&mp=" + mPage + "&mby=" + mBy + "\">" + tTotalAmount + "</a></li>");
-                    %>
+            <nav aria-label="Navigation" class="mt-3">
+                <ul class="pagination justify-content-center pagination-sm">
+                    <%if (tPage > 1) {%>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/mailing?tp=<%=tPage - 1%>&tby=<%=tBy%>&mp=<%=mPage%>&mby=<%=mBy%>"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <%}%>
+                    <li class="page-item active" aria-current="page"><span class="page-link"><%=tPage%>
+                                    <span class="sr-only">(current)</span>
+                                </span></li>
+                    <%if (tTotalAmount > Math.abs(tPage * tBy)) {%>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/mailing?tp=<%=tPage + 1%>&tby=<%=tBy%>&mp=<%=mPage%>&mby=<%=mBy%>"
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <%}%>
                 </ul>
             </nav>
         </div>
